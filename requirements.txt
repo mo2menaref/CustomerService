@@ -1,0 +1,6 @@
+langchain
+langchain-google-genai
+langgraph
+chromadb
+sentence-transformers
+pypdf
