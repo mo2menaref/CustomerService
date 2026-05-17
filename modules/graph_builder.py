@@ -6,6 +6,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_google_genai import ChatGoogleGenerativeAI
 from modules.custom_tools import agent_tools
+from langchain.tools.retriever import create_retriever_tool
 
 # Define the state of the graph (Memory)
 class State(TypedDict):
@@ -14,11 +15,15 @@ class State(TypedDict):
 def build_agent_graph():
     # Initialize the graph
     graph_builder = StateGraph(State)
-    
+    rag_tool = create_retriever_tool(
+        retriever,
+        name="search_course_policies",
+        description="Search ThinkTree's course policies, coaching guidelines, and curriculum documents."
+    )
     # Initialize the Gemini model and bind the custom tools
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash") 
-    llm_with_tools = llm.bind_tools(agent_tools)
-    
+    all_tools = agent_tools + [rag_tool]  # merge with existing tools
+    llm_with_tools = llm.bind_tools(all_tools)
     # Define the chatbot node
     def chatbot(state: State):
         return {"messages": [llm_with_tools.invoke(state["messages"])]}
