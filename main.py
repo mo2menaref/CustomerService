@@ -10,9 +10,7 @@ def main():
     
     # Setup RAG (Ensure you have a PDF in the 'data' folder)
     retriever = setup_rag()
-    
-    # Build the LangGraph Agent
-    agent_app = build_agent_graph()
+    agent_app = build_agent_graph(retriever)  # pass it in
     
     print("\nSystem ready! Type 'exit' to quit.")
     print("-" * 40)
