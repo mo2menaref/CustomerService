@@ -1,5 +1,5 @@
 import os
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -10,10 +10,14 @@ def setup_rag():
     if not os.path.exists(pdf_path):
         print("Warning: PDF file not found. Please add 'course_policies.pdf' to the 'data' folder.")
         return None
-    
-    # Load the course policy document
-    loader = PyPDFLoader(pdf_path)
+
+    loader = DirectoryLoader(
+                        "data/",
+                        glob="**/*.pdf",
+                        loader_cls=PyPDFLoader
+                        )
     docs = loader.load()
+    
     
     # Split the document into smaller manageable chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
