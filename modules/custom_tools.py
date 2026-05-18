@@ -6,6 +6,14 @@ STUDENT_DB = {
     "2048": {"name": "Omar", "attendance": "60%", "grades": "C", "late_tasks": 2}
 }
 
+# Global retriever for RAG context
+rag_retriever = None
+
+def set_rag_retriever(retriever):
+    """Set the RAG retriever for the tools to use."""
+    global rag_retriever
+    rag_retriever = retriever
+
 @tool
 def get_student_progress(student_id: str) -> str:
     """Use this tool to get the progress, attendance, and grades of a student using their ID."""
@@ -24,5 +32,23 @@ def send_warning_email(student_id: str) -> str:
         return f"Warning email successfully sent to {student['name']}."
     return "No warning needed or student not found."
 
+@tool
+def query_course_policies(query: str) -> str:
+    """Use this tool to search course policies from the knowledge base."""
+    global rag_retriever
+    if not rag_retriever:
+        return "Course policies database not available. Please add PDF files to the 'data' folder."
+    
+    try:
+        docs = rag_retriever.invoke(query)
+        if not docs:
+            return "No relevant policies found for your query."
+        
+        # Combine the retrieved documents
+        response = "\n".join([doc.page_content for doc in docs[:3]])
+        return f"Course Policies:\n{response}"
+    except Exception as e:
+        return f"Error querying policies: {e}"
+
 # List of tools to be passed to the agent
-agent_tools = [get_student_progress, send_warning_email]
+agent_tools = [get_student_progress, send_warning_email, query_course_policies]
